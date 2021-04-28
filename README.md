@@ -139,16 +139,9 @@ build.gradle
 ```groovy
 android {
     defaultConfig {
-        // 编译配置项，不需要可以不添加
-        externalNativeBuild {
-        }
-
         ndk {
             // 导入log库
             ldLibs "log"
-        }
-
-        ndk {
             // 指定需要的ABI 可以不配置，默认全部架构
             abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
         }
