@@ -1,6 +1,6 @@
 # 基于 AS 4.1.x 的 Android JNI 项目总结
 
-一个Android JNI 开发的项目Demo，演示了在 Android Studio 4.1.x 上 CMake 和 ndk-build 的配置和使用，包含了**预编译库**的编译导入和使用。
+一个Android JNI 开发的项目Demo，演示了在 Android Studio上 CMake 和 ndk-build 的配置和使用，包含了**预编译库**的编译导入和使用。
 
 ![](https://assets.che300.com/wiki/2021-04-28/16196034480785026.png)
 
@@ -39,11 +39,9 @@
 > [ndk-build](https://developer.android.com/ndk/guides/ndk-build)
 一个速度比 CMake 快但仅支持 Android 的编译脚本，有官方支持并使用的构建脚本，源码中大量模块使用 `Android.mk`构建。
 
-由于实现功能比较简单，两中方案都可以选择。
+可以根据实际情况，选择合适的方案。当前项目基于 `Android Studio 4.1.3`，`CMake 3.10.2`，`NDK 22.1.7171670` 构建。
 
 ## 环境配置
-
-本演示基于 `Android Studio 4.1.3`，`CMake 3.10.2`，`NDK 22.1.7171670`
 
 1. [下载所需的 NDK 或 CMake，LLDB 可选](https://developer.android.google.cn/studio/projects/install-ndk)
 
@@ -55,7 +53,7 @@
 
 3. 编写代码
 
-    所有相应c代码路径没有明确限制，只需要在build.gradle 指向相应的 `Android.mk` 或 `CMakeLists.txt` 即可。但是为了易于管理，放在路径 `src/main/cpp` 或者 `src/main/jni` 下。
+    所有相应c代码路径没有明确限制，只需要在 build.gradle 所指向的 `Android.mk` 或 `CMakeLists.txt` 文件中引用代码即可。但是为了易于管理，放在了路径 `src/main/cpp` 或者 `src/main/jni` 下。
 
 ### CMake配置
 
@@ -105,10 +103,10 @@ project("cmake-jni")
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 
-# 创建lib库名称，并设置为共享库或者静态库
+# 创建lib库名称，并设置为共享库
 add_library( # 库名称不用包含lib开头，将生成libcmake-lib.so文件
         cmake-lib
-        # 这里使用共享库，静态库为 STATIC
+        # 使用共享库，静态库为 STATIC
         SHARED
         # 源码文件，如果多个用空格隔开，这里为CMakeLists.txt所在位置的相对路径
         cmake_lib.cpp)
@@ -198,10 +196,11 @@ APP_PLATFORM := android-19 # 目标版本
 实际上简单的JNI开发，头文件是可选的，但是为了防止拼写错误，这边演示一下如何用使用命令行生成Class对应的头文件。
 
 ### Kotlin
-使用Kotlin声明JNI交互方法
+使用Kotlin声明JNI交互方法，Kotlin的JNI关键字是`external`，不同于Java的 `native`。
 ```kotlin
 package com.dede.cmake
-
+// 也可以直接声明为object CMakeLib {...}
+// 可以避免伴生对象声明与创建，这里是为了演示成员JNI方法
 class CMakeLib {
 
     external fun memberCallJNI(): String
@@ -352,7 +351,7 @@ class CMakeLib {
     external fun memberCallJNI(): String
 
     companion object {
-
+        // 添加 md5 jni方法
         @JvmStatic
         external fun md5(string: String): String
 
@@ -365,9 +364,9 @@ class CMakeLib {
     }
 }
 ```
+
 `javah` 重新生成头文件。
 声明C实现的md5 jni方法，md5实现代码就不贴了，可以在[JNIDemo](https://github.com/hushenghao/JNIDemo)里查看：
-
 ```C++
 // 导入头文件
 #include "md5.h"
