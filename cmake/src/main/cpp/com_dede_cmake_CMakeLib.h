@@ -17,6 +17,14 @@ JNIEXPORT jstring JNICALL Java_com_dede_cmake_CMakeLib_memberCallJNI
 
 /*
  * Class:     com_dede_cmake_CMakeLib
+ * Method:    md5
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_dede_cmake_CMakeLib_md5
+  (JNIEnv *, jobject, jstring);
+
+/*
+ * Class:     com_dede_cmake_CMakeLib
  * Method:    staticCallJNI
  * Signature: ()Ljava/lang/String;
  */

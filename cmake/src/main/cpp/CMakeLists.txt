@@ -21,10 +21,11 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        cmake_lib.cpp)
+        cmake_lib.cpp
+        md5.cpp)
 
 # 引入预编译库utils-lib
-add_library(utils-lib SHARED IMPORTED)
+add_library(utils-lib STATIC IMPORTED)
 # 设置预编译库路径，不可以用相对路径
 # ${CMAKE_SOURCE_DIR}表示当前文件所在路径
 set_target_properties(

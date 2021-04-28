@@ -2,6 +2,7 @@ package com.dede.jnidemo
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.dede.cmake.CMakeLib
 import com.dede.ndk_build.NDKBuildLib
@@ -17,7 +18,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         // Example of a call to a native method
-//        findViewById<TextView>(R.id.sample_text).text = JNIByCMake().memberCallJNI()
+        findViewById<TextView>(R.id.sample_text).apply {
+            text = CMakeLib.md5(text.toString())
+        }
 
         Log.i(TAG, CMakeLib.staticCallJNI())
         Log.i(TAG, CMakeLib().memberCallJNI())

@@ -11,6 +11,10 @@ class CMakeLib {
     external fun memberCallJNI(): String
 
     companion object {
+
+        @JvmStatic
+        external fun md5(string: String): String
+
         @JvmStatic
         external fun staticCallJNI(): String
 
