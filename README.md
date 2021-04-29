@@ -289,7 +289,7 @@ JNIEXPORT jstring JNICALL Java_com_dede_cmake_JavaJNI_callJNI
 ```
 
 ## 编写C代码
-将成功的头文件复制到c源码路径下即可，声明相应的cpp文件，文件名可以不和头文件一样，例如：`cmake_lib.cpp`
+将生成的头文件复制到jni源码路径下即可，声明相应的cpp文件，文件名可以不和头文件一样，例如：`cmake_lib.cpp`
 
 ```C++
 #include <jni.h>

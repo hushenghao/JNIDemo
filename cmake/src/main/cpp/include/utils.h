@@ -1,7 +1,6 @@
 //
-// Created by 胡晟昊 on 4/27/21.
+// Created by hsh on 4/27/21.
 //
-
 
 #ifndef TOSTRING_H
 #define TOSTRING_H

@@ -55,7 +55,7 @@ std::string upper_cast_md5(std::string str) {
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_dede_cmake_CMakeLib_md5(JNIEnv *env, jobject thiz, jstring string) {
+Java_com_dede_cmake_CMakeLib_md5(JNIEnv *env, jclass clazz, jstring string) {
     std::string input = (env->GetStringUTFChars(string, JNI_FALSE));
     return (env)->NewStringUTF(upper_cast_md5(input).c_str());
 }

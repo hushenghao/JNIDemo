@@ -5,4 +5,4 @@ project("cmake-utils-lib")
 
 add_library(cmake-utils-lib SHARED utils.cpp)
 
-target_link_libraries(cmake-utils-lib)
+#target_link_libraries(cmake-utils-lib)
