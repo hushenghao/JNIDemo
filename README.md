@@ -43,8 +43,8 @@
 
 ## 环境配置
 
-1. [下载所需的 NDK 或 CMake，LLDB 可选](https://developer.android.google.cn/studio/projects/install-ndk)
-
+1. [下载所需的 NDK 和 CMake，LLDB 可选](https://developer.android.google.cn/studio/projects/install-ndk)
+    假如只用 ndk-build，CMake 也可以不下载
     ![下载 NDK、CMake](https://assets.che300.com/wiki/2021-04-28/16195889338345077.png)
 
 2. [关联到项目](https://developer.android.google.cn/studio/projects/gradle-external-native-builds)
@@ -92,7 +92,7 @@ android {
 
 [CMakeLists.txt](https://developer.android.google.cn/ndk/guides/cmake)
 
-```makefile
+```Makefile
 # CMake版本
 cmake_minimum_required(VERSION 3.10.2)
 # 项目名称，单项目可以不配置
@@ -203,14 +203,15 @@ class CMakeLib {
         external fun staticCallJNI(): String
 
         init {
-            System.loadLibrary("cmake-lib")// 改为声明生成的so文件名
+            // 改为声明生成的so文件，不用包含lib前缀和.so后缀
+            System.loadLibrary("cmake-lib")
         }
     }
 }
 ```
 
 重新编译模块 **Build -> Make Module 'XXX.xxx'**，编译生成.class文件。
-class路为：`mudule/build/tmp/kotlin-classes/debug/com/dede/cmake/CMakeLib.class`，在 `mudule/build/tmp/kotlin-classes/debug`路径下运行：
+class路径为：`mudule/build/tmp/kotlin-classes/debug/com/dede/cmake/CMakeLib.class`，在 `mudule/build/tmp/kotlin-classes/debug`路径下运行：
 ```shell
 // javah 全类名
 javah com.dede.cmake.CMakeLib 
@@ -254,7 +255,7 @@ Java声明JNI交互的Class和方法，**这里的Java生成方法只做为演�
 public class JavaJNI {
 
     static {
-        System.loadLibrary("cmake-lib");// 改为生成的so文件名
+        System.loadLibrary("cmake-lib");
     }
     
     public static native String callJNI(String str);
