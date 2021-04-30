@@ -26,6 +26,9 @@ class MainActivity : AppCompatActivity() {
         Log.i(TAG, CMakeLib().memberCallJNI())
         Log.i(TAG, NDKBuildLib.staticCallJNI())
         Log.i(TAG, NDKBuildLib().memberCallJNI())
+        Log.i(TAG, NDKBuildLib.dynamic())
+        Log.i(TAG, NDKBuildLib().obj2String(this))
+        Log.i(TAG, NDKBuildLib.add(1, 1).toString())
     }
 
 }

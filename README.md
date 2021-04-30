@@ -186,6 +186,11 @@ APP_PLATFORM := android-19 # 目标版本
 
 ## 生成头文件
 
+JNI开发一般流程为：
+1. 编写Java端的相关native方法
+2. 通过native方法生成头文件
+3. C/C++导入头文件，编写C代码
+
 实际上简单的JNI开发，头文件是可选的，但是为了防止拼写错误，这边演示一下如何用使用命令行生成Class对应的头文件。
 
 ### Kotlin
@@ -580,6 +585,99 @@ Java_com_dede_ndk_1build_NDKBuildLib_staticCallJNI(JNIEnv *env, jclass clazz) {
 
 这里演示了共享库的导入，静态库导入方式类似。[查看官方文档](https://developer.android.google.cn/ndk/guides/prebuilts)
 
+## JNI动态注册
+
+通过上面的介绍也发现了，每次新添加一个方法都需要重新生成头文件，实现新的`Java_包名_类名_方法名`的C函数，这种通过方法名来约束JNI方法的方式叫做**静态注册**。这种方式实现起来简单，可以又工具直接支持，但是也暴漏出来维护起来特别不方便的问题。那有没有一种方案可以避免这种问题呢。答案就是**JNI动态注册**。
+
+动态注册基本思想是在`JNI_Onload()`函数中通过JNI中提供的`RegisterNatives()`方法来将C/C++方法和java方法对应起来(注册), 我们在调用 `System.loadLibrary()`的时候,会在C/C++文件中回调一个名为 `JNI_OnLoad()`的函数,在这个函数中一般是做一些初始化相关操作, 我们可以在这个方法里面注册函数, 注册整体流程如下:
+
+1. 编写Java端的相关native方法
+2. 编写C/C++代码, 实现JNI_Onload()方法
+3. 将Java 方法和 C/C++方法通过签名信息一一对应起来
+4. 通过JavaVM获取JNIEnv, JNIEnv主要用于获取Java类和调用一些JNI提供的方法
+5. 使用类名和对应起来的方法作为参数, 调用JNI提供的函数`RegisterNatives()`注册方法
+
+这里在ndk-build的module演示：
+
+ndk_build_lib.cpp
+```c++
+/** 数组元素个数 */
+#define GET_ARRAY_LEN(array, len){len= (sizeof(array) / sizeof(array[0]));}
+
+/**
+ * 动态注册的空参方法
+ */
+jstring dynamic(JNIEnv *env, jobject that) {
+    LOGD(TAG, "dynamic: %s", to_string(env, that));
+    return env->NewStringUTF("JNI dynamic");
+}
+
+/**
+ * 动态注册的jobject 2 string
+ */
+jstring obj2String(JNIEnv *env, jobject that, jobject obj) {
+    LOGD(TAG, "obj2String: %s", to_string(env, that));
+    return env->NewStringUTF(to_string(env, obj));
+}
+
+/**
+ * 加法
+ */
+jint add(JNIEnv *env, jobject that, jint a, jint b) {
+    LOGD(TAG, "add: %s", to_string(env, that));
+    return a + b;
+}
+
+/**
+ * JNI方法动态注册
+ */
+static const JNINativeMethod jniNativeMethod[] = {
+        {"dynamic",    "()Ljava/lang/String;",                   (void *) dynamic},
+        {"obj2String", "(Ljava/lang/Object;)Ljava/lang/String;", (void *) obj2String},
+        {"add",        "(II)I",                                  (void *) add},
+};
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *javaVm, void *pVoid) {
+    JNIEnv *jniEnv = nullptr;
+    jint result = javaVm->GetEnv(reinterpret_cast<void **>(&jniEnv), JNI_VERSION_1_6);
+    if (result != JNI_OK) {
+        return -1;
+    }
+    jclass clazz = jniEnv->FindClass("com/dede/ndk_build/NDKBuildLib");
+    int methodCount;
+    GET_ARRAY_LEN(jniNativeMethod, methodCount);
+    jniEnv->RegisterNatives(clazz, jniNativeMethod, methodCount);
+    return JNI_VERSION_1_6;
+}
+```
+
+### JNI签名
+动态注册中`JNINativeMethod`结构体如下：
+```c++
+ typedef struct {
+    const char* name;
+    const char* signature;
+    void*       fnPtr;
+ } JNINativeMethod;
+```
+第一个`name`参数就是java声明的方法名。
+第二个参数需要注意：括号内代表传入参数的签名符号，为空可以不写，括号外代表返回参数的签名符号，为空填写 V。这里不推荐对照关系表进行填写，容易出错，这里推荐使用`javap`命令来获取方法签名：
+
+命令行cd到java代码所对应的classes编译路径下，也就是[生成头文件](#生成头文件)时的路径下，执行如下Java命令：
+```shell
+// javap -s 全类名
+javap -s com.dede.ndk_build.NDKBuildLib
+```
+这个命令会打印所有方法信息：
+```
+...
+public static final native java.lang.String dynamic();
+    descriptor: ()Ljava/lang/String;
+...
+```
+`descriptor: `后面内容就是方法签名，如果有分号也需要包含分号，直接完整复制到C代码内即可。
+
+第三个参数为C实现的函数指针，需要强转为`(void *)`。
 ## Todo
 
 * so文件瘦身

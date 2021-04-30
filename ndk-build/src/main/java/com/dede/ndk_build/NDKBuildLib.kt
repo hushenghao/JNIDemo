@@ -14,7 +14,16 @@ class NDKBuildLib {
 
         @JvmStatic
         external fun staticCallJNI(): String
+
+        @JvmStatic
+        external fun dynamic(): String
+
+        @JvmStatic
+        external fun add(a: Int, b: Int): Int
     }
+
+    external fun obj2String(obj: Any): String
+
 
     external fun memberCallJNI(): String
 }
